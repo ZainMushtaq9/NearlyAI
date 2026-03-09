@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>Join NearlyAI 🚀</h2>
+        <p class="subtitle">Create your free account</p>
+        <form method="POST">
+            <!-- Role Selector -->
+            <div class="role-selector">
+                <label class="role-option active">
+                    <input type="radio" name="role" value="customer" checked>
+                    <span class="icon">👤</span>
+                    <span class="label">Customer</span>
+                </label>
+                <label class="role-option">
+                    <input type="radio" name="role" value="owner">
+                    <span class="icon">🏪</span>
+                    <span class="label">Business Owner</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" class="form-control" placeholder="Your full name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required
+                    minlength="6">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone (Optional)</label>
+                    <input type="text" name="phone" class="form-control" placeholder="03XX-XXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>City (Optional)</label>
+                    <input type="text" name="city" class="form-control" placeholder="e.g. Lahore">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg"
+                style="width:100%; justify-content:center; margin-top:0.5rem;">Create Account</button>
+        </form>
+        <p style="text-align:center; margin-top:1.5rem; color: var(--text-muted);">
+            Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}{{ biz.name }}{% endblock %}
+
+{% block content %}
+<!-- DETAIL HEADER -->
+<div class="detail-hero">
+    <div class="detail-header">
+        <div class="detail-header-info">
+            <h1>
+                <span class="cat-icon-lg">{{ biz.category_icon or '🏪' }}</span> {{ biz.name }}
+                {% if biz.verified %}
+                <span class="verified-badge" style="font-size:0.85rem;">✅ Verified Business</span>
+                {% endif %}
+            </h1>
+            <div class="meta">
+                <span>📍 {{ biz.area }}, {{ biz.city }}</span>
+                {% if biz.category_name %}<span>{{ biz.category_icon }} {{ biz.category_name }}</span>{% endif %}
+                {% if biz.phone %}<span>📞 {{ biz.phone }}</span>{% endif %}
+                {% if biz.opening_hours %}<span>🕐 {{ biz.opening_hours }}</span>{% endif %}
+            </div>
+            <div class="meta" style="margin-top:0.5rem;">
+                <span>
+                    <span class="stars" style="font-size:1.1rem;">{% for i in range(5) %}{% if i < (biz.avg_rating |
+                            round | int) %}★{% else %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                <strong>{{ "%.1f"|format(biz.avg_rating) }}</strong> ({{ biz.review_count }} reviews)
+                </span>
+                <span>👁️ {{ biz.view_count }} views</span>
+            </div>
+        </div>
+        <div class="detail-header-actions">
+            {% if session.get('user_id') %}
+            <form action="{{ url_for('toggle_favourite', biz_id=biz.id) }}" method="POST" style="display:inline;">
+                <button type="button" class="fav-btn {% if is_favourite %}active{% endif %}"
+                    onclick="toggleFavourite({{ biz.id }}, this)">
+                    {% if is_favourite %}❤️ Saved{% else %}🤍 Save{% endif %}
+                </button>
+            </form>
+            {% endif %}
+            {% if biz.lat and biz.lng %}
+            <button class="btn btn-primary btn-sm"
+                onclick="openDirections({{ biz.lat }}, {{ biz.lng }}, '{{ biz.name }}')">
+                🗺️ Get Directions
+            </button>
+            {% endif %}
+            {% if biz.whatsapp %}
+            <a href="https://wa.me/{{ biz.whatsapp | replace('-','') | replace(' ','') }}" target="_blank"
+                class="btn btn-success btn-sm">💬 WhatsApp</a>
+            {% endif %}
+            {% if biz.phone %}
+            <a href="tel:{{ biz.phone }}" class="btn btn-outline btn-sm">📞 Call</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- DETAIL GRID -->
+<div class="detail-grid">
+    <!-- LEFT COLUMN -->
+    <div>
+        <!-- Description -->
+        <div class="detail-card">
+            <h3>📝 About</h3>
+            <p style="color: var(--text-secondary); line-height:1.7;">{{ biz.description or 'No description provided
+                yet.' }}</p>
+            {% if biz.address %}
+            <p style="margin-top:1rem; color: var(--text-muted); font-size:0.9rem;">📍 {{ biz.address }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Photos -->
+        {% if photos %}
+        <div class="detail-card">
+            <h3>📸 Photos</h3>
+            <div class="photo-gallery">
+                {% for photo in photos %}
+                <img src="{{ photo.photo_url }}" alt="{{ biz.name }} photo" loading="lazy">
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Location Map -->
+        {% if biz.lat and biz.lng %}
+        <div class="detail-card">
+            <h3 style="display:flex; justify-content:space-between; align-items:center;">
+                <span>📍 Location</span>
+                <button class="btn btn-primary btn-sm"
+                    onclick="openDirections({{ biz.lat }}, {{ biz.lng }}, '{{ biz.name }}')">
+                    🗺️ Open in Google Maps
+                </button>
+            </h3>
+            <div id="detail-map" style="height:280px; border-radius:var(--radius-sm); margin-top:0.75rem; z-index:1;"
+                data-lat="{{ biz.lat }}" data-lng="{{ biz.lng }}" data-name="{{ biz.name }}"
+                data-marker-image="{{ biz.marker_image or '' }}"></div>
+            <p style="color:var(--text-muted); font-size:0.82rem; margin-top:0.5rem;">
+                📍 {{ biz.area }}, {{ biz.city }} — Click "Open in Google Maps" for directions.
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Reviews -->
+        <div class="detail-card">
+            <h3>⭐ Reviews ({{ reviews|length }})</h3>
+
+            {% if session.get('role') == 'customer' and not user_review %}
+            <form method="POST" action="{{ url_for('submit_review', biz_id=biz.id) }}"
+                style="margin-bottom:1.5rem; padding:1rem; background:var(--bg-input); border-radius:var(--radius-sm); border:1px solid var(--border);">
+                <p style="font-weight:600; margin-bottom:0.75rem;">Leave a Review</p>
+                <div class="star-rating-input">
+                    {% for i in range(5, 0, -1) %}
+                    <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" required>
+                    <label for="star{{ i }}">★</label>
+                    {% endfor %}
+                </div>
+                <textarea name="comment" class="form-control" placeholder="Write your experience..."
+                    style="margin-top:0.75rem; min-height:80px;"></textarea>
+                <button type="submit" class="btn btn-primary btn-sm" style="margin-top:0.75rem;">Submit Review</button>
+            </form>
+            {% elif session.get('role') == 'customer' and user_review %}
+            <p
+                style="color: var(--text-muted); font-size:0.9rem; margin-bottom:1rem; padding:0.75rem; background:var(--bg-input); border-radius:var(--radius-sm); border:1px solid var(--border);">
+                ✅ You've already reviewed this business.</p>
+            {% elif not session.get('user_id') %}
+            <p style="color: var(--text-muted); font-size:0.9rem; margin-bottom:1rem;">
+                <a href="{{ url_for('login') }}">Login as a customer</a> to leave a review.
+            </p>
+            {% endif %}
+
+            {% if reviews %}
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div>
+                        <span class="review-author">{{ review.reviewer_name }}</span>
+                        <span class="stars" style="margin-left:0.5rem;">{% for i in range(5) %}{% if i < review.rating
+                                %}★{% else %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                    </div>
+                    <span class="review-date">{{ review.created_at[:10] if review.created_at else '' }}</span>
+                </div>
+                {% if review.comment %}
+                <p class="review-comment">{{ review.comment }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <p style="color: var(--text-muted);">No reviews yet. Be the first!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+        <!-- AI Query Widget -->
+        <div class="ai-widget" style="margin-bottom:1.5rem;">
+            <h3>🤖 Ask AI About This Business</h3>
+            <p style="color: var(--text-muted); font-size:0.85rem; margin-top:0.3rem;">Get instant answers based on the
+                business profile.</p>
+            <div class="ai-input-group">
+                <input type="text" id="ai-question" placeholder="e.g. Do you offer bridal stitching?"
+                    onkeydown="if(event.key==='Enter')askAIQuery({{ biz.id }})">
+                <button id="ai-ask-btn" class="btn btn-primary btn-sm" onclick="askAIQuery({{ biz.id }})">Ask</button>
+            </div>
+            <div id="ai-response" class="ai-response"></div>
+        </div>
+
+        <!-- Deals -->
+        {% if deals %}
+        <div class="detail-card">
+            <h3>🏷️ Active Deals</h3>
+            {% for deal in deals %}
+            <div class="deal-card">
+                <h4>{{ deal.title }}</h4>
+                {% if deal.discount_percent %}
+                <div class="discount">{{ deal.discount_percent }}% OFF</div>
+                {% endif %}
+                {% if deal.description %}
+                <p style="color: var(--text-secondary); font-size:0.88rem; margin-top:0.3rem;">{{ deal.description }}
+                </p>
+                {% endif %}
+                {% if deal.valid_until %}
+                <p style="color: var(--text-muted); font-size:0.8rem; margin-top:0.3rem;">Valid until {{
+                    deal.valid_until }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Business Info Card -->
+        <div class="detail-card">
+            <h3>📋 Business Info</h3>
+            <div style="font-size:0.9rem; color: var(--text-secondary);">
+                {% if biz.phone %}
+                <p style="margin-bottom:0.5rem;">📞 <strong>Phone:</strong> <a href="tel:{{ biz.phone }}">{{ biz.phone
+                        }}</a></p>
+                {% endif %}
+                {% if biz.whatsapp %}
+                <p style="margin-bottom:0.5rem;">💬 <strong>WhatsApp:</strong> <a
+                        href="https://wa.me/{{ biz.whatsapp | replace('-','') | replace(' ','') }}" target="_blank">{{
+                        biz.whatsapp }}</a></p>
+                {% endif %}
+                {% if biz.opening_hours %}
+                <p style="margin-bottom:0.5rem;">🕐 <strong>Hours:</strong> {{ biz.opening_hours }}</p>
+                {% endif %}
+                {% if biz.address %}
+                <p style="margin-bottom:0.5rem;">📍 <strong>Address:</strong> {{ biz.address }}</p>
+                {% endif %}
+                {% if biz.city %}
+                <p style="margin-bottom:0.5rem;">🏙️ <strong>City:</strong> {{ biz.city }}</p>
+                {% endif %}
+                {% if biz.lat and biz.lng %}
+                <p style="margin-bottom:0.5rem;">
+                    🗺️ <strong>Coordinates:</strong>
+                    <a href="javascript:void(0)"
+                        onclick="openDirections({{ biz.lat }}, {{ biz.lng }}, '{{ biz.name }}')"
+                        style="cursor:pointer;">
+                        {{ "%.4f"|format(biz.lat) }}, {{ "%.4f"|format(biz.lng) }}
+                    </a>
+                </p>
+                {% endif %}
+                <p style="margin-bottom:0.5rem;">📅 <strong>Listed:</strong> {{ biz.created_at[:10] if biz.created_at
+                    else 'N/A' }}</p>
+                <p>
+                    <strong>Status:</strong>
+                    {% if biz.verified %}
+                    <span class="badge badge-success">✅ Verified</span>
+                    {% elif biz.status == 'pending' %}
+                    <span class="badge badge-warning">⏳ Pending</span>
+                    {% else %}
+                    <span class="badge badge-info">Active</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

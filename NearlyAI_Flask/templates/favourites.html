@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}My Favourites{% endblock %}
+
+{% block content %}
+<div class="section">
+    <h2 class="section-title">❤️ My Favourites</h2>
+
+    {% if favourites %}
+    <div class="biz-grid">
+        {% for biz in favourites %}
+        <a href="{{ url_for('business_detail', biz_id=biz.id) }}" class="biz-card"
+            style="text-decoration:none; color:inherit;">
+            <div class="biz-card-img">
+                {{ biz.category_icon if biz.category_icon else '🏪' }}
+            </div>
+            <div class="biz-card-body">
+                <div class="biz-card-title">
+                    {{ biz.name }}
+                    {% if biz.verified %}
+                    <span class="verified-badge">✅ Verified</span>
+                    {% endif %}
+                </div>
+                <div class="biz-card-meta">
+                    📍 {{ biz.area }}, {{ biz.city }}
+                    {% if biz.category_name %} · {{ biz.category_icon }} {{ biz.category_name }}{% endif %}
+                </div>
+                <div class="biz-card-desc">{{ biz.description or 'No description.' }}</div>
+                <div class="biz-card-footer">
+                    <div>
+                        <span class="stars">{% for i in range(5) %}{% if i < (biz.avg_rating | round | int) %}★{% else
+                                %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                        <span class="rating-text">{{ "%.1f"|format(biz.avg_rating) }} ({{ biz.review_count }})</span>
+                    </div>
+                    <button class="fav-btn active"
+                        onclick="event.preventDefault(); toggleFavourite({{ biz.id }}, this)">❤️ Saved</button>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="icon">❤️</span>
+        <h3>No favourites yet</h3>
+        <p>Browse businesses and save your favourites!</p>
+        <a href="{{ url_for('search') }}" class="btn btn-primary">🔍 Explore Businesses</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

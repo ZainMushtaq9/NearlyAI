@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Deals{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>🏷️ Deals & Promotions</h1>
+        <p class="subtitle">Create deals to attract more customers to your businesses.</p>
+    </div>
+
+    <!-- Add Deal Form -->
+    <div class="detail-card">
+        <h3>➕ Post New Deal</h3>
+        <form method="POST" action="{{ url_for('add_deal') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Business</label>
+                    <select name="business_id" class="form-control" required>
+                        <option value="">Select business</option>
+                        {% for biz in businesses %}
+                        <option value="{{ biz.id }}">{{ biz.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Deal Title</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Eid Special" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Discount %</label>
+                    <input type="number" name="discount_percent" class="form-control" placeholder="e.g. 20" min="1"
+                        max="100">
+                </div>
+                <div class="form-group">
+                    <label>Valid Until</label>
+                    <input type="date" name="valid_until" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" class="form-control" placeholder="Describe the deal..."
+                    rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">🏷️ Post Deal</button>
+        </form>
+    </div>
+
+    <!-- Existing Deals -->
+    <div class="detail-card">
+        <h3>📋 My Deals</h3>
+        {% if deals %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Business</th>
+                        <th>Title</th>
+                        <th>Discount</th>
+                        <th>Valid Until</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for deal in deals %}
+                    <tr>
+                        <td>{{ deal.business_name }}</td>
+                        <td><strong>{{ deal.title }}</strong><br><span
+                                style="color:var(--text-muted); font-size:0.8rem;">{{ deal.description or '' }}</span>
+                        </td>
+                        <td>{% if deal.discount_percent %}<span class="badge badge-warning">{{ deal.discount_percent }}%
+                                OFF</span>{% else %}—{% endif %}</td>
+                        <td>{{ deal.valid_until or 'No expiry' }}</td>
+                        <td>
+                            <form action="{{ url_for('delete_deal', deal_id=deal.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Remove this deal?')">🗑️ Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="icon">🏷️</span>
+            <h3>No deals yet</h3>
+            <p>Post a deal to attract more customers!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

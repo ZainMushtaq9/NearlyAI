@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ biz.name }}{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width:750px;">
+    <div class="form-card">
+        <h2>Edit Business ✏️</h2>
+        <p class="subtitle">Update your business profile</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Business Name</label>
+                <input type="text" name="name" id="biz-name" class="form-control" value="{{ biz.name }}" required>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category_id" id="category-select" class="form-control">
+                    <option value="">Select category</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id==biz.category_id %}selected{% endif %}>{{ cat.icon }} {{
+                        cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" name="city" id="city" class="form-control" value="{{ biz.city }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Area</label>
+                    <input type="text" name="area" id="area" class="form-control" value="{{ biz.area }}" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Full Address</label>
+                <input type="text" name="address" class="form-control" value="{{ biz.address or '' }}">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ biz.phone or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="text" name="whatsapp" class="form-control" value="{{ biz.whatsapp or '' }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Opening Hours</label>
+                <input type="text" name="opening_hours" class="form-control" value="{{ biz.opening_hours or '' }}">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" id="description" class="form-control"
+                    rows="4">{{ biz.description or '' }}</textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Latitude</label>
+                    <input type="number" name="lat" step="any" class="form-control" value="{{ biz.lat or '' }}">
+                </div>
+                <div class="form-group">
+                    <label>Longitude</label>
+                    <input type="number" name="lng" step="any" class="form-control" value="{{ biz.lng or '' }}">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Update Cover Image</label>
+                        <input type="file" name="cover_image" class="form-control" accept="image/*">
+                        {% if biz.cover_image %}
+                        <div style="margin-top:0.5rem;"><img
+                                src="{{ url_for('static', filename='uploads/' + biz.cover_image) }}"
+                                style="height:60px; border-radius:4px;"></div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Update Map Marker Logo (Optional)</label>
+                        <input type="file" name="marker_image" class="form-control" accept="image/*"
+                            title="Upload your brand logo to show as a pin on the map instead of generic category icons.">
+                        {% if biz.marker_image %}
+                        <div style="margin-top:0.5rem;"><img
+                                src="{{ url_for('static', filename='uploads/' + biz.marker_image) }}"
+                                style="height:40px; border-radius:50%; border:2px solid var(--primary);"></div>
+                        {% endif %}
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Appears as your shop's
+                            pin on the map!</p>
+                    </div>
+                </div>
+
+                <!-- Existing Photos -->
+                {% if photos %}
+                <div class="form-group">
+                    <label>Current Photos</label>
+                    <div class="photo-gallery">
+                        {% for photo in photos %}
+                        <div style="position:relative;">
+                            <img src="{{ photo.photo_url }}" alt="Photo">
+                            <form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST"
+                                style="position:absolute; top:4px; right:4px;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    style="padding:0.2rem 0.5rem; font-size:0.75rem;"
+                                    onclick="return confirm('Delete this photo?')">✕</button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label>Add More Photos</label>
+                    <input type="file" name="photos" class="form-control" accept="image/*" multiple>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg"
+                    style="width:100%; justify-content:center; margin-top:1rem;">💾 Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

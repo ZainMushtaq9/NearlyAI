@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Register Business{% endblock %}
+
+{% block content %}
+<div class="form-container" style="max-width:750px;">
+    <div class="form-card">
+        <h2>Register Your Business 🏪</h2>
+        <p class="subtitle">Get discovered by thousands of nearby customers</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Business Name *</label>
+                <input type="text" name="name" id="biz-name" class="form-control" placeholder="e.g. Ali Tailors"
+                    required>
+            </div>
+            <div class="form-group">
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Category</span>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addNewCategory()"
+                        style="font-size:0.78rem;">
+                        ➕ Add New Category
+                    </button>
+                </label>
+                <select name="category_id" id="category-select" class="form-control">
+                    <option value="">Select category</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+                <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">Can't find your category?
+                    Click "Add New Category" above.</p>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>City *</span>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addNewCity()"
+                            style="font-size:0.78rem;">🏙️ Add City</button>
+                    </label>
+                    <input type="text" name="city" id="city" class="form-control" placeholder="e.g. Lahore" required
+                        list="city-list">
+                    <datalist id="city-list">
+                        {% for c in all_cities %}<option value="{{ c }}">{% endfor %}
+                        <option value="Lahore">
+                        <option value="Karachi">
+                        <option value="Islamabad">
+                        <option value="Rawalpindi">
+                        <option value="Faisalabad">
+                        <option value="Multan">
+                        <option value="Peshawar">
+                        <option value="Quetta">
+                        <option value="Sialkot">
+                        <option value="Gujranwala">
+                        <option value="Bahawalpur">
+                        <option value="Hyderabad">
+                    </datalist>
+                    <p style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">Type any city — or click
+                        "Add City" if yours isn't listed.</p>
+                </div>
+                <div class="form-group">
+                    <label>Area / Neighbourhood *</label>
+                    <input type="text" name="area" id="area" class="form-control" placeholder="e.g. DHA Phase 5"
+                        required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Full Address</label>
+                <input type="text" name="address" class="form-control" placeholder="e.g. Shop 12, DHA Phase 5 Market">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone" class="form-control" placeholder="03XX-XXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="text" name="whatsapp" class="form-control" placeholder="03XX-XXXXXXX">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Opening Hours</label>
+                <input type="text" name="opening_hours" class="form-control" placeholder="e.g. Mon-Sat 9am-8pm">
+            </div>
+            <div class="form-group">
+                <label>Services Offered (for AI description)</label>
+                <input type="text" name="services" id="services" class="form-control"
+                    placeholder="e.g. bridal wear, alterations, formal suits">
+            </div>
+
+            <!-- AI Description Generator -->
+            <div class="form-group">
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Business Description</span>
+                    <button type="button" id="ai-generate-btn" class="btn btn-outline btn-sm"
+                        onclick="generateAIProfile()">🤖 Generate with AI</button>
+                </label>
+                <textarea name="description" id="description" class="form-control"
+                    placeholder="Describe your business, or let AI write it for you..." rows="4"></textarea>
+            </div>
+
+            <!-- LIVE LOCATION PICKER -->
+            <div class="form-group">
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>📍 Business Location</span>
+                    <div style="display:flex; gap:0.4rem;">
+                        <button type="button" id="use-location-btn" class="btn btn-success btn-sm"
+                            onclick="useMyLocation()">📍 Use My Location</button>
+                        <button type="button" id="live-track-btn" class="btn btn-outline btn-sm"
+                            onclick="startLiveTracking()" title="Hold for continuous GPS tracking">🔴 Live</button>
+                    </div>
+                </label>
+                <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">
+                    Click the map to pin your location, or use GPS. City &amp; Area fields will auto-fill.
+                </p>
+                <div id="location-picker-map"
+                    style="height:300px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:0.5rem; z-index:1;">
+                </div>
+                <div id="location-label"
+                    style="font-size:0.82rem; color:var(--text-muted); padding:0.4rem 0.6rem; background:var(--bg-input); border-radius:var(--radius-sm); border:1px solid var(--border);">
+                    Click on map or press GPS to set location
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Latitude</label>
+                    <input type="number" name="lat" id="lat" step="any" class="form-control" placeholder="31.5497">
+                </div>
+                <div class="form-group">
+                    <label>Longitude</label>
+                    <input type="number" name="lng" id="lng" step="any" class="form-control" placeholder="74.3436">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cover Image</label>
+                    <input type="file" name="cover_image" class="form-control" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Map Marker Logo (Optional)</label>
+                    <input type="file" name="marker_image" class="form-control" accept="image/*"
+                        title="Upload your brand logo to show as a pin on the map instead of generic category icons.">
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">Appears as your shop's pin
+                        on the map!</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Business Photos (up to 5)</label>
+                <input type="file" name="photos" class="form-control" accept="image/*" multiple>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg"
+                style="width:100%; justify-content:center; margin-top:1rem;">🚀 Register Business</button>
+            <p style="text-align:center; color:var(--text-muted); font-size:0.85rem; margin-top:0.75rem;">Your business
+                will be visible after admin verification.</p>
+        </form>
+    </div>
+</div>
+{% endblock %}

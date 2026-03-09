@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Owner Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>📊 Owner Dashboard</h1>
+        <p class="subtitle">Welcome back, {{ session.get('user_name') }}! Here's how your businesses are doing.</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="icon">🏪</div>
+            <div class="value">{{ businesses|length }}</div>
+            <div class="label">My Businesses</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">👁️</div>
+            <div class="value">{{ total_views }}</div>
+            <div class="label">Total Views</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">⭐</div>
+            <div class="value">{{ total_reviews }}</div>
+            <div class="label">Total Reviews</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">🤖</div>
+            <div class="value">{{ total_queries }}</div>
+            <div class="label">AI Queries</div>
+        </div>
+    </div>
+
+    <!-- My Businesses -->
+    <div class="detail-card">
+        <h3>🏪 My Businesses</h3>
+        {% if businesses %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Business</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Rating</th>
+                        <th>Views</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for biz in businesses %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('business_detail', biz_id=biz.id) }}" style="font-weight:600;">{{
+                                biz.name }}</a>
+                        </td>
+                        <td>{{ biz.category_icon }} {{ biz.category_name or 'N/A' }}</td>
+                        <td>{{ biz.area }}, {{ biz.city }}</td>
+                        <td>
+                            <span class="stars">{% for i in range(5) %}{% if i < (biz.avg_rating | round | int) %}★{%
+                                    else %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                            <span class="rating-text">{{ "%.1f"|format(biz.avg_rating) }} ({{ biz.review_count
+                                }})</span>
+                        </td>
+                        <td>{{ biz.view_count }}</td>
+                        <td>
+                            {% if biz.verified %}
+                            <span class="badge badge-success">✅ Verified</span>
+                            {% elif biz.status == 'pending' %}
+                            <span class="badge badge-warning">⏳ Pending</span>
+                            {% elif biz.suspended %}
+                            <span class="badge badge-danger">🚫 Suspended</span>
+                            {% else %}
+                            <span class="badge badge-info">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_business', biz_id=biz.id) }}" class="btn btn-outline btn-sm">✏️
+                                Edit</a>
+                            <form action="{{ url_for('delete_business', biz_id=biz.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Delete this business?')">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="icon">🏪</span>
+            <h3>No businesses yet</h3>
+            <p>Register your first business and start getting discovered!</p>
+            <a href="{{ url_for('register_business') }}" class="btn btn-primary">➕ Register Business</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Reviews -->
+    {% if recent_reviews %}
+    <div class="detail-card">
+        <h3>💬 Recent Reviews on My Businesses</h3>
+        {% for review in recent_reviews %}
+        <div class="review-card">
+            <div class="review-header">
+                <div>
+                    <span class="review-author">{{ review.reviewer_name }}</span>
+                    <span style="color: var(--text-muted); font-size:0.85rem;"> on {{ review.business_name }}</span>
+                    <span class="stars" style="margin-left:0.5rem;">{% for i in range(5) %}{% if i < review.rating %}★{%
+                            else %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                </div>
+                <span class="review-date">{{ review.created_at[:10] if review.created_at else '' }}</span>
+            </div>
+            {% if review.comment %}
+            <p class="review-comment">{{ review.comment }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

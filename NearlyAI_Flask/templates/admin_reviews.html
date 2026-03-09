@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Admin — Reviews{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>📝 Manage Reviews</h1>
+        <p class="subtitle">Flag or remove inappropriate reviews</p>
+    </div>
+
+    <div class="detail-card">
+        {% if reviews %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Business</th>
+                        <th>Reviewer</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr {% if review.flagged %}style="background:rgba(239,68,68,0.05);" {% endif %}>
+                        <td>{{ review.id }}</td>
+                        <td><strong>{{ review.business_name }}</strong></td>
+                        <td>{{ review.reviewer_name }}<br><span style="font-size:0.75rem; color:var(--text-muted);">{{
+                                review.reviewer_email }}</span></td>
+                        <td>
+                            <span class="stars">{% for i in range(5) %}{% if i < review.rating %}★{% else %}<span
+                                    class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                        </td>
+                        <td style="max-width:250px;">{{ review.comment or '—' }}</td>
+                        <td>
+                            {% if review.flagged %}
+                            <span class="badge badge-danger">🚩 Flagged</span>
+                            {% else %}
+                            <span class="badge badge-success">✅ Active</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ review.created_at[:10] if review.created_at else 'N/A' }}</td>
+                        <td style="white-space:nowrap;">
+                            {% if not review.flagged %}
+                            <form action="{{ url_for('admin_flag_review', review_id=review.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-warning btn-sm">🚩 Flag</button>
+                            </form>
+                            {% else %}
+                            <form action="{{ url_for('admin_unflag_review', review_id=review.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-outline btn-sm">✅ Unflag</button>
+                            </form>
+                            {% endif %}
+                            <form action="{{ url_for('admin_delete_review', review_id=review.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Permanently delete this review?')">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="icon">📝</span>
+            <h3>No reviews yet</h3>
+            <p>Reviews will appear here once customers start reviewing businesses.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

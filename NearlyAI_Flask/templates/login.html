@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>Welcome Back 👋</h2>
+        <p class="subtitle">Sign in to your NearlyAI account</p>
+        <form method="POST">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg"
+                style="width:100%; justify-content:center; margin-top:0.5rem;">Login</button>
+        </form>
+        <p style="text-align:center; margin-top:1.5rem; color: var(--text-muted);">
+            Don't have an account? <a href="{{ url_for('register') }}">Sign up free</a>
+        </p>
+
+        <div
+            style="margin-top:1.5rem; padding:1rem; background:var(--bg-input); border-radius:var(--radius-sm); border:1px solid var(--border);">
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;"><strong>Demo Accounts:</strong>
+            </p>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">🛡️ Admin: admin@nearlyai.com</p>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">🏪 Owner: owner@nearlyai.com</p>
+            <p style="font-size:0.8rem; color:var(--text-secondary);">👤 Customer: customer@nearlyai.com</p>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.3rem;">Password: Test1234!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

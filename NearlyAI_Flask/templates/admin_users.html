@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Admin — Users{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>👥 Manage Users</h1>
+        <p class="subtitle">View and manage all platform users</p>
+    </div>
+
+    <div class="detail-card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>City</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td><strong>{{ user.name }}</strong></td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}<span class="badge badge-purple">🛡️ Admin</span>
+                            {% elif user.role == 'owner' %}<span class="badge badge-info">🏪 Owner</span>
+                            {% else %}<span class="badge badge-success">👤 Customer</span>{% endif %}
+                        </td>
+                        <td>{{ user.phone or '—' }}</td>
+                        <td>{{ user.city or '—' }}</td>
+                        <td>{{ user.created_at[:10] if user.created_at else 'N/A' }}</td>
+                        <td>
+                            {% if user.role != 'admin' %}
+                            <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Delete this user?')">🗑️</button>
+                            </form>
+                            {% else %}
+                            <span style="color:var(--text-muted); font-size:0.8rem;">Protected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

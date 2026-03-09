@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Admin — All Businesses{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>🏪 Manage Businesses</h1>
+        <p class="subtitle">View, verify, and manage all platform businesses</p>
+    </div>
+
+    <div class="detail-card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Business</th>
+                        <th>Owner</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Rating</th>
+                        <th>Views</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for biz in businesses %}
+                    <tr>
+                        <td>{{ biz.id }}</td>
+                        <td>
+                            <a href="{{ url_for('business_detail', biz_id=biz.id) }}"><strong>{{ biz.name
+                                    }}</strong></a>
+                        </td>
+                        <td>{{ biz.owner_name }}<br><span style="font-size:0.75rem; color:var(--text-muted);">{{
+                                biz.owner_email }}</span></td>
+                        <td>{{ biz.category_name or 'N/A' }}</td>
+                        <td>{{ biz.area }}, {{ biz.city }}</td>
+                        <td>
+                            <span class="stars">{% for i in range(5) %}{% if i < (biz.avg_rating | round | int) %}★{%
+                                    else %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                            <span class="rating-text">{{ "%.1f"|format(biz.avg_rating) }}</span>
+                        </td>
+                        <td>{{ biz.view_count }}</td>
+                        <td>
+                            {% if biz.verified %}
+                            <span class="badge badge-success">✅ Verified</span>
+                            {% elif biz.suspended %}
+                            <span class="badge badge-danger">🚫 Suspended</span>
+                            {% elif biz.status == 'pending' %}
+                            <span class="badge badge-warning">⏳ Pending</span>
+                            {% else %}
+                            <span class="badge badge-info">Active</span>
+                            {% endif %}
+                        </td>
+                        <td style="white-space:nowrap;">
+                            {% if not biz.verified %}
+                            <form action="{{ url_for('admin_verify', biz_id=biz.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-success btn-sm">✅</button>
+                            </form>
+                            {% endif %}
+                            {% if not biz.suspended %}
+                            <form action="{{ url_for('admin_suspend', biz_id=biz.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">🚫</button>
+                            </form>
+                            {% else %}
+                            <form action="{{ url_for('admin_activate', biz_id=biz.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-success btn-sm">🔄</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

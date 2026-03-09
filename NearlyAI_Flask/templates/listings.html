@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Explore Businesses{% endblock %}
+
+{% block content %}
+<div class="listings-layout">
+    <!-- SIDEBAR FILTERS -->
+    <aside class="sidebar">
+        <h3>🔍 Filters</h3>
+        <form method="GET" action="{{ url_for('search') }}">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" name="q" value="{{ query }}" placeholder="Keywords...">
+            </div>
+            <div class="filter-group">
+                <label>City</label>
+                <select name="city">
+                    <option value="">All Cities</option>
+                    {% for c in all_cities %}
+                    <option value="{{ c }}" {% if c==city %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Category</label>
+                <select name="category">
+                    <option value="">All Categories</option>
+                    {% for cat in all_categories %}
+                    <option value="{{ cat.id }}" {% if cat.id|string==category_id %}selected{% endif %}>{{ cat.icon }}
+                        {{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Min Rating</label>
+                <select name="rating">
+                    <option value="">Any</option>
+                    <option value="4" {% if min_rating=='4' %}selected{% endif %}>⭐ 4+</option>
+                    <option value="3" {% if min_rating=='3' %}selected{% endif %}>⭐ 3+</option>
+                    <option value="2" {% if min_rating=='2' %}selected{% endif %}>⭐ 2+</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="checkbox-group">
+                    <input type="checkbox" name="verified" value="1" {% if verified=='1' %}checked{% endif %}>
+                    Verified Only
+                </label>
+            </div>
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select name="sort">
+                    <option value="rating" {% if sort=='rating' %}selected{% endif %}>Top Rated</option>
+                    <option value="views" {% if sort=='views' %}selected{% endif %}>Most Viewed</option>
+                    <option value="newest" {% if sort=='newest' %}selected{% endif %}>Newest</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Apply
+                Filters</button>
+        </form>
+    </aside>
+
+    <!-- RESULTS -->
+    <div>
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem;">
+            <h2 class="section-title" style="margin-bottom:0;">
+                {% if query %}Results for "{{ query }}"{% else %}All Businesses{% endif %}
+            </h2>
+            <span style="color: var(--text-muted); font-size:0.9rem;">{{ businesses|length }} found</span>
+        </div>
+
+        {% if businesses %}
+        <div class="biz-grid">
+            {% for biz in businesses %}
+            <a href="{{ url_for('business_detail', biz_id=biz.id) }}" class="biz-card"
+                style="text-decoration:none; color:inherit;">
+                <div class="biz-card-img" data-icon="{{ biz.category_icon if biz.category_icon else '🏪' }}">
+                    {{ biz.category_icon if biz.category_icon else '🏪' }}
+                </div>
+                <div class="biz-card-body">
+                    <div class="biz-card-title">
+                        {{ biz.name }}
+                        {% if biz.verified %}
+                        <span class="verified-badge">✅ Verified</span>
+                        {% endif %}
+                    </div>
+                    <div class="biz-card-meta">
+                        📍 {{ biz.area }}, {{ biz.city }}
+                        {% if biz.category_name %} · {{ biz.category_icon }} {{ biz.category_name }}{% endif %}
+                    </div>
+                    <div class="biz-card-desc">{{ biz.description or 'No description available.' }}</div>
+                    <div class="biz-card-footer">
+                        <div>
+                            <span class="stars">{% for i in range(5) %}{% if i < (biz.avg_rating | round | int) %}★{%
+                                    else %}<span class="stars-muted">☆</span>{% endif %}{% endfor %}</span>
+                            <span class="rating-text">{{ "%.1f"|format(biz.avg_rating) }} ({{ biz.review_count
+                                }})</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">👁️ {{ biz.view_count }}</span>
+                            {% if biz.lat and biz.lng %}
+                            <button class="btn btn-outline btn-sm" style="font-size:0.72rem; padding:0.2rem 0.5rem;"
+                                onclick="event.preventDefault(); openDirections({{ biz.lat }}, {{ biz.lng }}, '{{ biz.name }}')">
+                                🗺️ Go
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="icon">🔍</span>
+            <h3>No businesses found</h3>
+            <p>Try adjusting your filters or search for something else.</p>
+            <a href="{{ url_for('search') }}" class="btn btn-outline">Clear Filters</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

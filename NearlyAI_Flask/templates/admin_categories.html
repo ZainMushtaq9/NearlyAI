@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Admin — Categories{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>📂 Manage Categories</h1>
+        <p class="subtitle">Add or remove business categories</p>
+    </div>
+
+    <!-- Add Category -->
+    <div class="detail-card">
+        <h3>➕ Add New Category</h3>
+        <form method="POST" action="{{ url_for('admin_add_category') }}"
+            style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:flex-end;">
+            <div class="form-group" style="flex:0 0 60px; margin:0;">
+                <label>Icon</label>
+                <input type="text" name="icon" class="form-control" value="📦"
+                    style="text-align:center; font-size:1.3rem;">
+            </div>
+            <div class="form-group" style="flex:1; min-width:180px; margin:0;">
+                <label>Name</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g. Pet Shop" required>
+            </div>
+            <div class="form-group" style="flex:2; min-width:200px; margin:0;">
+                <label>Description</label>
+                <input type="text" name="description" class="form-control"
+                    placeholder="e.g. Pet food, grooming, accessories">
+            </div>
+            <button type="submit" class="btn btn-primary" style="height:fit-content;">Add Category</button>
+        </form>
+    </div>
+
+    <!-- Categories List -->
+    <div class="detail-card">
+        <h3>📋 All Categories ({{ categories|length }})</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Icon</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Businesses</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td style="font-size:1.5rem; text-align:center;">{{ cat.icon }}</td>
+                        <td><strong>{{ cat.name }}</strong></td>
+                        <td style="color:var(--text-muted);">{{ cat.description or '—' }}</td>
+                        <td><span class="badge badge-info">{{ cat.biz_count }}</span></td>
+                        <td>
+                            {% if cat.biz_count == 0 %}
+                            <form action="{{ url_for('admin_delete_category', cat_id=cat.id) }}" method="POST"
+                                style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Delete category?')">🗑️ Delete</button>
+                            </form>
+                            {% else %}
+                            <span style="color:var(--text-muted); font-size:0.8rem;">In use</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
